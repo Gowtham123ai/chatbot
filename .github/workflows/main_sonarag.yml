@@ -8,13 +8,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # Use Linux runner
     permissions:
-      contents: read  # Required for actions/checkout
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,25 +25,22 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          # Install only cross-platform dependencies
-          pip install -r requirements.txt --no-deps
-          # Install dependencies without Windows-only packages
-          pip install $(grep -v "pywin32" requirements.txt || true)
+          pip install -r requirements.txt
 
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
-            .
+            . 
             !venv/
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # Use Linux runner
     needs: build
     permissions:
-      id-token: write  # Required for JWT
-      contents: read   # Required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -55,11 +51,11 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BBC14F7FB01B478CBF89DCB1E01D4EAB }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EE5314B66CE243788E3C87D1CA67BF50 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1F0D16FC048744EBB165E337AB453599 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
-      - name: Restart Azure Web App
+      - name: Restart Azure Web App (optional)
         run: |
           az webapp restart --name sonarag --resource-group <YOUR_RESOURCE_GROUP>
 
