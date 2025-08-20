@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read
+      contents: read  # Required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +39,8 @@ jobs:
     runs-on: windows-latest
     needs: build
     permissions:
-      id-token: write
-      contents: read
+      id-token: write  # Required for JWT
+      contents: read   # Required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -55,8 +55,18 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EE5314B66CE243788E3C87D1CA67BF50 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1F0D16FC048744EBB165E337AB453599 }}
 
-      - name: Deploy to Azure Web App
+      - name: Set Run-From-Package
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'sonarag'
           slot-name: 'Production'
+          package: '.'   # Deploy current directory
+          configuration-file: ''  # Optional
+          enable-oryx-build: true
+          run-from-package: true   # Enables Run-From-Package
+
+      - name: Restart Azure Web App
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp restart --name sonarag --resource-group <YOUR_RESOURCE_GROUP>
