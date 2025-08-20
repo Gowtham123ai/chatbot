@@ -10,13 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read  # Required for actions/checkout
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -28,7 +27,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Upload artifact for deployment
+      - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
@@ -40,8 +39,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write
-      contents: read
+      id-token: write  # Required for JWT
+      contents: read   # Required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -56,7 +55,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EE5314B66CE243788E3C87D1CA67BF50 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1F0D16FC048744EBB165E337AB453599 }}
 
-      - name: Restart Azure Web App (optional, avoids deployment conflicts)
+      - name: Restart Azure Web App (optional, avoids conflicts)
         run: az webapp restart --name sonarag --resource-group <YOUR_RESOURCE_GROUP>
 
       - name: Deploy to Azure Web App
