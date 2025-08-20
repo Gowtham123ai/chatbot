@@ -29,10 +29,9 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - - name: Install dependencies
-           run: pip install -r backend/requirements.txt
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt   # ✅ fixed indentation + path
 
-        
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Upload artifact for deployment jobs
@@ -69,6 +68,3 @@ jobs:
         with:
           app-name: 'sonarag'
           slot-name: 'Production'
-
-          
-
