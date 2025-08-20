@@ -1,66 +1,51 @@
-name: Build and deploy Python app to Azure Web App - sonarag
+name: Build and Deploy to Azure
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest   # Use Linux runner
-    permissions:
-      contents: read
-
     steps:
-      - uses: actions/checkout@v4
+      # Checkout your repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      # Set up Python
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # Install dependencies
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: |
-            . 
-            !venv/
-
-  deploy:
-    runs-on: ubuntu-latest   # Use Linux runner
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
-
-      - name: Restart Azure Web App (optional)
+      # Run tests (optional)
+      - name: Run tests
         run: |
-          az webapp restart --name sonarag --resource-group <YOUR_RESOURCE_GROUP>
+          pytest
 
+      # Log in to Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Restart Web App (optional, helps with deployment locks)
+      - name: Restart Azure Web App
+        run: |
+          az webapp restart --name <sonarag> --resource-group <sdfghjk>
+
+      # Deploy to Azure App Service
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'sonarag'
-          slot-name: 'Production'
+          app-name: <sonarag>
+          slot-name: production
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
