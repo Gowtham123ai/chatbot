@@ -29,8 +29,8 @@ jobs:
           python -m venv venv
           source venv/bin/activate
       
-      - name: Install dependencies
-        run: pip install -r chatbot/backend/requirements.txt
+      - - name: Install dependencies
+           run: pip install -r backend/requirements.txt
 
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
@@ -71,3 +71,4 @@ jobs:
           slot-name: 'Production'
 
           
+
